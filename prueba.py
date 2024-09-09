@@ -1,10 +1,10 @@
 import pymysql
 
 connection = pymysql.connect(
-    host='ip_maquina_base_datos',
-    user='usuario_flask',
-    password='tu_contraseña_segura',
-    database='nombre_de_tu_base_de_datos'
+    host='172.31.83.172',
+    user='user',
+    password='123456789',
+    database='bigdata'
 )
 
 # Prueba de conexión

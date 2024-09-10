@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify, CORS
+from flask import Flask, request, jsonify
+from flask_cors import CORS  
 import pymysql
 
 app = Flask(__name__)
@@ -8,7 +9,7 @@ CORS(app)
 db_config = {
     'host': 'ip_maquina_base_datos',  # La IP de la máquina donde está MySQL
     'user': 'usuario_flask',          # El usuario que creaste para la base de datos
-    'password': 'tu_contraseña_segura',# La contraseña del usuario
+    'password': 'tu_contraseña_segura',# La contraseña del usuario  
     'database': 'nombre_de_tu_base_de_datos',  # El nombre de la base de datos
     'cursorclass': pymysql.cursors.DictCursor
 }

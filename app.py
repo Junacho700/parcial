@@ -7,10 +7,10 @@ CORS(app)
 
 # Configura los datos de conexión a la base de datos MySQL
 db_config = {
-    'host': 'ip_maquina_base_datos',  # La IP de la máquina donde está MySQL
-    'user': 'usuario_flask',          # El usuario que creaste para la base de datos
-    'password': 'tu_contraseña_segura',# La contraseña del usuario  
-    'database': 'nombre_de_tu_base_de_datos',  # El nombre de la base de datos
+    'host': '172.31.83.172s',  # La IP de la máquina donde está MySQL
+    'user': 'user',          # El usuario que creaste para la base de datos
+    'password': '123456789',# La contraseña del usuario  
+    'database': 'bigdata',  # El nombre de la base de datos
     'cursorclass': pymysql.cursors.DictCursor
 }
 

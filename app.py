@@ -7,7 +7,7 @@ CORS(app)
 
 # Configura los datos de conexión a la base de datos MySQL
 db_config = {
-    'host': '172.31.83.172s',  # La IP de la máquina donde está MySQL
+    'host': '172.31.83.172',  # La IP de la máquina donde está MySQL
     'user': 'user',          # El usuario que creaste para la base de datos
     'password': '123456789',# La contraseña del usuario  
     'database': 'bigdata',  # El nombre de la base de datos

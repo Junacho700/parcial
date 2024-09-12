@@ -51,18 +51,18 @@ def register_user():
                          )''')
     else:
         connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
 
     try:
-        with connection.cursor() as cursor:
-            # Crear la consulta SQL para insertar el usuario
-            sql = """
-            INSERT INTO usuarios (first_name, last_name, birth_date, password)
-            VALUES (%s, %s, %s, %s)
-            """
-            # Ejecutar la consulta SQL
+        # Crear la consulta SQL para insertar el usuario
+        if os.getenv('FLASK_ENV') == 'testing':
+            sql = "INSERT INTO usuarios (first_name, last_name, birth_date, password) VALUES (?, ?, ?, ?)"
             cursor.execute(sql, (first_name, last_name, birth_date, password))
-            connection.commit()  # Guardar los cambios
+        else:
+            sql = "INSERT INTO usuarios (first_name, last_name, birth_date, password) VALUES (%s, %s, %s, %s)"
+            cursor.execute(sql, (first_name, last_name, birth_date, password))
 
+        connection.commit()  # Guardar los cambios
         return jsonify({'message': 'Usuario registrado exitosamente'}), 201
 
     except Exception as e:
@@ -70,6 +70,7 @@ def register_user():
         return jsonify({'message': 'Error al registrar el usuario'}), 500
 
     finally:
+        cursor.close()
         connection.close()
 
 # Ruta para obtener todos los usuarios registrados
@@ -77,12 +78,17 @@ def register_user():
 def get_users():
     if os.getenv('FLASK_ENV') == 'testing':
         connection = sqlite3.connect(db_config['database'])
+        cursor = connection.cursor()
     else:
         connection = pymysql.connect(**db_config)
+        cursor = connection.cursor()
 
     try:
-        with connection.cursor() as cursor:
-            # Obtener todos los usuarios de la base de datos
+        # Obtener todos los usuarios de la base de datos
+        if os.getenv('FLASK_ENV') == 'testing':
+            cursor.execute("SELECT first_name, last_name, birth_date FROM usuarios")
+            users = cursor.fetchall()
+        else:
             sql = "SELECT first_name, last_name, birth_date FROM usuarios"
             cursor.execute(sql)
             users = cursor.fetchall()
@@ -94,6 +100,7 @@ def get_users():
         return jsonify({'message': 'Error al obtener usuarios'}), 500
 
     finally:
+        cursor.close()
         connection.close()
 
 if __name__ == '__main__':

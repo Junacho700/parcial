@@ -23,8 +23,10 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run unit tests
+      env:
+        FLASK_ENV: testing  # Configurar el entorno de pruebas
       run: |
-        python -m unittest test-app.py
+        python -m unittest test_app.py
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,6 +63,6 @@ jobs:
             # Detener instancias previas de Gunicorn si existen
             pkill gunicorn || true
 
-            # Ejecuta la aplicación con Gunicorn
-            gunicorn -b 0.0.0.0:5000 main_app:app --daemon
+            # Ejecutar la aplicación con Gunicorn
+            gunicorn -b 0.0.0.0:5000 app:app --daemon
         '

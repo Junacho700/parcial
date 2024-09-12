@@ -1,12 +1,33 @@
 import unittest
 from app import app
+import os
+import sqlite3
 
 class FlaskAppTestCase(unittest.TestCase):
 
     def setUp(self):
         # Configuración antes de cada prueba
+        app.config['TESTING'] = True
         self.app = app.test_client()
-        self.app.testing = True
+
+        # Establecer modo de prueba con SQLite
+        os.environ['FLASK_ENV'] = 'testing'
+        with sqlite3.connect('test.db') as connection:
+            cursor = connection.cursor()
+            # Crear la tabla de usuarios para pruebas
+            cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
+                                id INTEGER PRIMARY KEY,
+                                first_name TEXT NOT NULL,
+                                last_name TEXT NOT NULL,
+                                birth_date TEXT NOT NULL,
+                                password TEXT NOT NULL
+                             )''')
+
+    def tearDown(self):
+        # Eliminar la base de datos SQLite después de cada prueba
+        with sqlite3.connect('test.db') as connection:
+            cursor = connection.cursor()
+            cursor.execute('DROP TABLE IF EXISTS usuarios')
 
     def test_register_user_success(self):
         # Simular los datos de un usuario para registrar

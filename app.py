@@ -1,18 +1,27 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS  
 import pymysql
+import os
+import sqlite3
 
 app = Flask(__name__)
 CORS(app)
 
-# Configura los datos de conexión a la base de datos MySQL
-db_config = {
-    'host': '172.31.83.172',  # La IP de la máquina donde está MySQL
-    'user': 'user',          # El usuario que creaste para la base de datos
-    'password': '123456789',# La contraseña del usuario  
-    'database': 'bigdata',  # El nombre de la base de datos
-    'cursorclass': pymysql.cursors.DictCursor
-}
+# Detectar si estamos en modo de pruebas
+if os.getenv('FLASK_ENV') == 'testing':
+    # Usar SQLite durante las pruebas
+    db_config = {
+        'database': 'test.db'
+    }
+else:
+    # Configura los datos de conexión a la base de datos MySQL para producción
+    db_config = {
+        'host': '172.31.83.172',  # La IP de la máquina donde está MySQL
+        'user': 'user',           # El usuario que creaste para la base de datos
+        'password': '123456789',  # La contraseña del usuario
+        'database': 'bigdata',    # El nombre de la base de datos
+        'cursorclass': pymysql.cursors.DictCursor
+    }
 
 # Ruta para recibir el registro de usuarios
 @app.route('/register', methods=['POST'])
@@ -30,7 +39,18 @@ def register_user():
         return jsonify({'message': 'Todos los campos son requeridos'}), 400
 
     # Establecer la conexión con la base de datos
-    connection = pymysql.connect(**db_config)
+    if os.getenv('FLASK_ENV') == 'testing':
+        connection = sqlite3.connect(db_config['database'])
+        cursor = connection.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
+                            id INTEGER PRIMARY KEY,
+                            first_name TEXT NOT NULL,
+                            last_name TEXT NOT NULL,
+                            birth_date TEXT NOT NULL,
+                            password TEXT NOT NULL
+                         )''')
+    else:
+        connection = pymysql.connect(**db_config)
 
     try:
         with connection.cursor() as cursor:
@@ -55,7 +75,10 @@ def register_user():
 # Ruta para obtener todos los usuarios registrados
 @app.route('/users', methods=['GET'])
 def get_users():
-    connection = pymysql.connect(**db_config)
+    if os.getenv('FLASK_ENV') == 'testing':
+        connection = sqlite3.connect(db_config['database'])
+    else:
+        connection = pymysql.connect(**db_config)
 
     try:
         with connection.cursor() as cursor:

@@ -20,3 +20,4 @@ Werkzeug==3.0.4
 mysql-connector-python
 boto3
 mysql
+python-dotenv

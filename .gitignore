@@ -1,0 +1,8 @@
+# Ignorar archivos de configuración sensibles
+.env
+credentials.json
+
+# Ignorar archivos y carpetas de compilación
+__pycache__/
+*.pyc
+

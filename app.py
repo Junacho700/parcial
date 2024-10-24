@@ -31,7 +31,7 @@ athena_client = boto3.client(
 )
 
 # Configuración de Athena
-ATHENA_DATABASE = 's3-sakila'
+ATHENA_DATABASE = 's3_sakila'
 ATHENA_OUTPUT_LOCATION = 's3://s3-sakila/'  # Cambia a tu bucket de salida
 
 # Credenciales de la RDS de MySQL

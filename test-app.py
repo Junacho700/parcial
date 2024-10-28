@@ -1,64 +1,71 @@
 import unittest
+from unittest.mock import patch, MagicMock
+from flask import json
 from app import app
-import os
-import sqlite3
 
-class FlaskAppTestCase(unittest.TestCase):
+class TestFlaskApp(unittest.TestCase):
 
-    def setUp(self):
-        # Configuración antes de cada prueba
-        app.config['TESTING'] = True
-        self.app = app.test_client()
+    @classmethod
+    def setUpClass(cls):
+        cls.app = app.test_client()
+        cls.app.testing = True
 
-        # Establecer modo de prueba con SQLite
-        os.environ['FLASK_ENV'] = 'testing'
-        with sqlite3.connect('test.db') as connection:
-            cursor = connection.cursor()
-            # Crear la tabla de usuarios para pruebas
-            cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
-                                id INTEGER PRIMARY KEY,
-                                first_name TEXT NOT NULL,
-                                last_name TEXT NOT NULL,
-                                birth_date TEXT NOT NULL,
-                                password TEXT NOT NULL
-                             )''')
+    @patch('main_app.athena_client.start_query_execution')
+    @patch('main_app.athena_client.get_query_execution')
+    @patch('main_app.athena_client.get_query_results')
+    def test_get_movies_success(self, mock_get_query_results, mock_get_query_execution, mock_start_query_execution):
+        # Simular la ejecución de la consulta en Athena
+        mock_start_query_execution.return_value = {'QueryExecutionId': '1234'}
 
-    def tearDown(self):
-        # Eliminar la base de datos SQLite después de cada prueba
-        with sqlite3.connect('test.db') as connection:
-            cursor = connection.cursor()
-            cursor.execute('DROP TABLE IF EXISTS usuarios')
-
-    def test_register_user_success(self):
-        # Simular los datos de un usuario para registrar
-        user_data = {
-            'firstName': 'Juan',
-            'lastName': 'Perez',
-            'birthDate': '1990-01-01',
-            'password': 'securepassword123'
+        # Simular el estado de ejecución de la consulta como 'SUCCEEDED'
+        mock_get_query_execution.return_value = {
+            'QueryExecution': {'Status': {'State': 'SUCCEEDED'}}
         }
-        
-        # Enviar una solicitud POST con los datos del usuario
-        response = self.app.post('/register', json=user_data)
-        
-        # Verificar que la respuesta tenga un código de estado 201 (creado con éxito)
-        self.assertEqual(response.status_code, 201)
-        self.assertIn(b'Usuario registrado exitosamente', response.data)
 
-    def test_register_user_missing_fields(self):
-        # Simular datos incompletos para el registro de un usuario
-        incomplete_user_data = {
-            'firstName': 'Juan',
-            'lastName': 'Perez'
-            # Falta birthDate y password
+        # Simular los resultados de la consulta
+        mock_get_query_results.return_value = {
+            'ResultSet': {
+                'Rows': [
+                    # Fila de datos simulada
+                    {'Data': [{'VarCharValue': '5'}, {'VarCharValue': '1'}, {'VarCharValue': 'Inception'}, {'VarCharValue': '2024-10-24 14:30:00'}]}
+                ]
+            }
         }
-        
-        # Enviar una solicitud POST con datos incompletos
-        response = self.app.post('/register', json=incomplete_user_data)
-        
-        # Verificar que la respuesta tenga un código de estado 400 (petición incorrecta)
-        self.assertEqual(response.status_code, 400)
-        self.assertIn(b'Todos los campos son requeridos', response.data)
+
+        # Realizar la solicitud GET
+        response = self.app.get('/get-movies/5')
+
+        # Verificar que la respuesta sea exitosa y contenga un elemento
+        self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response.data)
+        self.assertEqual(response_json['status'], 'success')
+        self.assertEqual(len(response_json['data']), 1)
+        self.assertEqual(response_json['data'][0]['title'], 'Inception')
+
+    @patch('main_app.db.session')
+    def test_add_rental_success(self, mock_session):
+        # Simular la sesión de la base de datos
+        mock_session.execute.return_value = MagicMock(scalar=MagicMock(return_value=1))
+
+        # Datos de prueba para añadir una renta
+        rental_data = {
+            "rental_date": "2024-10-24 14:30:00",
+            "customer_id": 5,
+            "film_id": 1
+        }
+
+        # Realizar la solicitud POST
+        response = self.app.post('/add-rental',
+                                 data=json.dumps(rental_data),
+                                 content_type='application/json')
+
+        # Verificar que la respuesta sea exitosa
+        self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response.data)
+        self.assertEqual(response_json['status'], 'success')
+        self.assertEqual(response_json['message'], 'Renta y registros relacionados añadidos con éxito')
+        mock_session.execute.assert_called()
+        mock_session.commit.assert_called()
 
 if __name__ == '__main__':
     unittest.main()

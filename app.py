@@ -50,7 +50,7 @@ athena_client = boto3.client(
 
 # Configuración de Athena
 ATHENA_DATABASE = 's3_sakila'
-ATHENA_OUTPUT_LOCATION = 's3://ruta-salida-athena/'  # Cambia esto a tu bucket de salida
+ATHENA_OUTPUT_LOCATION = 's3://s3-sakila/'  # Cambia esto a tu bucket de salida
 
 # Ruta para obtener las películas rentadas por un cliente con el nombre de la película (GET)
 @app.route('/get-movies/<int:id_customer>', methods=['GET'])

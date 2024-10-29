@@ -50,7 +50,7 @@ athena_client = boto3.client(
 
 # Configuración de Athena
 ATHENA_DATABASE = 's3_sakila'
-ATHENA_OUTPUT_LOCATION = 's3://s3sakila/'  # Cambia esto a tu bucket de salida
+ATHENA_OUTPUT_LOCATION = 's3://s3-sakila/'  # Cambia esto a tu bucket de salida
 
 # Ruta para obtener las películas rentadas por un cliente con el nombre de la película (GET)
 @app.route('/get-movies/<int:id_customer>', methods=['GET'])
@@ -58,7 +58,7 @@ def get_movies(id_customer):
     # Consulta para obtener el nombre de la película desde fact_venta y film
     query = f"""
         SELECT fv.customer_id, fv.film_id, f.title, fv.rental_date
-        FROM fact_venta fv
+        FROM fact_rental fv
         JOIN film f ON fv.film_id = f.film_id
         WHERE fv.customer_id = {id_customer}
     """

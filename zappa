@@ -1,0 +1,22 @@
+{
+    "dev": {
+        "app_function": "app.f",
+        "aws_region": "us-east-1",
+        "exclude": [
+            "boto3",
+            "dateutil",
+            "botocore",
+            "s3transfer",
+            "concurrent"
+        ],
+        "keep_warm": false,
+        "apigateway_enabled": false,
+        "manage_roles": false,
+        "role_name": "labrole",
+        "profile_name": "default",
+        "project_name": "lambda",
+        "runtime": "python3.10",
+        "s3_bucket": "zappa-5t7tfhbad"
+        
+    }
+}
